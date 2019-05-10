@@ -1,0 +1,12 @@
+# For Usage
+###############################################################################
+pika==1.0.1 # https://pypi.org/project/pika/
+
+# For Debugging
+###############################################################################
+ipdb==0.11 # https://pypi.org/project/ipdb/
+
+# For Tests
+###############################################################################
+flake8==3.6.0 # https://pypi.org/project/flake8/
+pytest==4.1.1 # https://pypi.org/project/pytest/
