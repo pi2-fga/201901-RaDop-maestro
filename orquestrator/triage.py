@@ -7,11 +7,11 @@ def parse_json_dict(message_body):
     try:
         parse = json.loads(message_body)
     except:
-        print('\t[*] Houve erro na decodificação do payload!')
+        print('\t[*] Error in payload\'s decodification!')
     return parse
 
 def triage(message_body):
     # json -> dictionary
     dict_payload = parse_json_dict(message_body)
 
-    print(f'dicionário gerado: {dict_payload}')
+    print(f'generated dictionary: {dict_payload}')
