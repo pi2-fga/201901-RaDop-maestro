@@ -1,6 +1,6 @@
-# Orquestrador
+# Maestro
 
-O **Orquestrador** é o serviço do projeto RaDop responsável por, como o próprio nome sugere, orquestrar todos os serviços e microsserviços que serão usados em conjunto com o radar, o *Dashboard* e o RaDop App.
+O **Maestro** é o serviço do projeto RaDop responsável por orquestrar todos os serviços e microsserviços que serão usados em conjunto com o radar, o *Dashboard* e o RaDop App.
 
 ## Comandos básicos
 
@@ -14,17 +14,17 @@ O **Orquestrador** é o serviço do projeto RaDop responsável por, como o próp
 
 `# docker run -p 5672:5672 rabbitmq:3-alpine`
 
-### Iniciar o orquestrador
+### Iniciar o maestro
 
-- com o RabbitMQ já em execução, digite o seguinte comando a partir da pasta **orquestrator**:
+- com o RabbitMQ já em execução, digite o seguinte comando a partir da pasta **maestro**:
 
 `$ python queue_worker.py`
 
 ## Parâmetros das Mensagens
 
-Para a mensagem ser corretamente recebida e processada pelo orquestrador, o payload da mensagem deve estar no formato JSON (**com as chaves entre aspas simples(') ou duplas (")**. Do contrário, haverá erro e o JSON não poderá ser processado) e ter as seguintes chaves:
+Para a mensagem ser corretamente recebida e processada pelo maestro, o payload da mensagem deve estar no formato JSON (**com as chaves entre aspas simples(') ou duplas (")**. Do contrário, haverá erro e o JSON não poderá ser processado) e ter as seguintes chaves:
 
-- **type:** String com o tipo de payload que foi enviado. Esse tipo é usado para o orquestrador determinar o que ele deverá fazer com os dados recebidos;
+- **type:** String com o tipo de payload que foi enviado. Esse tipo é usado para o maestro determinar o que ele deverá fazer com os dados recebidos;
 - **payload:** O conteúdo em si do payload. Deve ser uma string, mas pode ser um outro JSON.
 
 No arquivo `examples/message_queue.py`, há um exemplo de script para fazer a conexão com a fila de mensagens do RabbitMQ e enviar a mensagem desejada.
@@ -73,22 +73,22 @@ source ~/.bashrc
 Agora crie um ambiente virtual com o seguinte comando (colocando o nome que deseja para o ambiente), neste exemplo usarei o nome composta:
 
 ```shell
-mkvirtualenv orquestrador
+mkvirtualenv maestro
 ```
 
 Para utilizá-lo:
 
 ```shell
-workon orquestrador
+workon maestro
 pip install -r requirements.txt   # Irá instalar todas as dependências usadas no projeto
 ```
 
 ## Build
 
-Para construir e rodar o container do orquestrador basta rodar os seguintes comandos:
+Para construir e rodar o container do maestro basta rodar os seguintes comandos:
 
 ```
-docker build -t orquestrador:latest .
-docker run -d --name orquestrador --net=host orquestrador
+docker build -t maestro:latest .
+docker run -d --name maestro --net=host maestro
 ```
 
