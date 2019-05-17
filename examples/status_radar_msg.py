@@ -13,8 +13,8 @@ HOST = 'localhost'
 
 print('pika version: %s' % pika.__version__)
 
+# test values: 2A 17 1 1 1 1
 carga, temp, status_rasp, status_camera, status_rf, status_server = sys.argv[1:7]
-print(sys.argv)
 
 connection = pika.BlockingConnection(
     pika.ConnectionParameters(host=HOST))
