@@ -23,7 +23,7 @@ main_channel = connection.channel()
 main_channel.exchange_declare(exchange=EXCHANGE, exchange_type=EXCHANGE_TYPE)
 
 msg = {
-    "type": "status_radar",
+    "type": "status-radar",
     "payload": {
         "cargaBateria": carga,
         "temperatura": temp,

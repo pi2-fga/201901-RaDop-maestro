@@ -23,7 +23,7 @@ main_channel = connection.channel()
 main_channel.exchange_declare(exchange=EXCHANGE, exchange_type=EXCHANGE_TYPE)
 
 msg = {
-    "type": "vehicle_flagrant",
+    "type": "vehicle-flagrant",
     "payload": {
         "id_radar": id_radar,
         "speed": speed,
