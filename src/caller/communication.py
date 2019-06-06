@@ -4,19 +4,10 @@ import os
 import uuid
 import datetime
 
-LOCALHOST = '0.0.0.0'
-
-MSERVICES_HOST = os.getenv('MSERVICES_HOST', 'localhost')
-ALPR_PORT = os.getenv('ALPR_PORT', 8080)
-SINESP_PORT = os.getenv('ALPR_PORT', 8080)
 ALPR_KEY = os.getenv('ALPR_KEY', '')
-
-
-def _do_request(dict_json, verb, url):
-    request_json = json.dumps(dict_json)
-
-    response = requests.request(verb, url, json=request_json)
-    return response
+ALPR_HOST = os.getenv('ALPR_HOST', 'localhost')
+ALPR_PORT = os.getenv('ALPR_PORT', 8080)
+SINESP_DOMAIN = os.getenv('SINESP_DOMAIN', '')
 
 
 def _generate_id():
@@ -44,12 +35,11 @@ def search_plate(image_vehicle = None):
             "time": time
         }
 
-        response = _do_request(dict_json, 'POST', f'http://{MSERVICES_HOST}:{ALPR_PORT}/function/fn-alpr')
+        response = requests.post(f'http://{ALPR_HOST}:{ALPR_PORT}/function/fn-alpr', json=dict_json)
 
         dict_response = response.json()
-
         if dict_response['status_code'] == 200:
-            return response
+            return dict_response
         else:
             return None
 
@@ -70,12 +60,11 @@ def get_vehicle_info(plate = None):
             "time": time
         }
 
-        response = _do_request(dict_json, 'POST', f'http://{MSERVICES_HOST}:{SINESP_PORT}/function/fn-sinesp')
+        response = requests.post(f'http://{SINESP_DOMAIN}/function/fn-sinesp', json=dict_json)
 
         dict_response = response.json()
-
         if dict_response['status_code'] == 200:
-            return response
+            return dict_response
         else:
             return None
 
