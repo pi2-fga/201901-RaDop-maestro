@@ -38,12 +38,26 @@ def search_plate(image_vehicle = None):
         response = requests.post(f'http://{ALPR_HOST}:{ALPR_PORT}/function/fn-alpr', json=dict_json)
 
         dict_response = response.json()
+
+        candidates_alpr = dict_response['response']['results'][0]['candidates']
+
+
+
         if dict_response['status_code'] == 200:
-            return dict_response
+            plate = None
+            best_confidence = -1
+
+            for candidate in candidates_alpr:
+                if candidate['matches_template'] == 1 and candidate['confidence'] > best_confidence:
+                    plate = candidate['plate']
+                    best_confidence = candidate['confidence']
+            
+            return plate
         else:
             return None
 
     else:
+        print('No image was sent!')
         return None
 
 
