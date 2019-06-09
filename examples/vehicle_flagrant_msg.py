@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=C0111,C0103,R0205
-
 import json
 import pika
 import sys
+import uuid
 
 EXCHANGE = 'message'
 EXCHANGE_TYPE = 'topic'
@@ -11,37 +11,45 @@ QUEUE = 'maestro'
 ROUTING_KEY = 'message.maestro'
 HOST = 'localhost'
 
-print('pika version: %s' % pika.__version__)
 
-# test values: 65 58 1F C 7E4 17 3B 3B -3 4AAQSkZJRgABAQAAAQABAAD/wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL//2Q==
-id_radar, speed, day, month, year, hour, minute, second, time_zone, image = sys.argv[1:11]
+# test values: 65 2019-04-27T10:14:35Z 1 80 77 60 true image1, image2
+# id_radar, time, infraction, vehicle_speed, considered_speed, max_allowed_speed, penality, image1, image2 = sys.argv[1:11]
 
-connection = pika.BlockingConnection(
-    pika.ConnectionParameters(host=HOST))
-main_channel = connection.channel()
 
-main_channel.exchange_declare(exchange=EXCHANGE, exchange_type=EXCHANGE_TYPE)
+def _generate_id():
+    identifier = str(uuid.uuid4())
+    return identifier
 
-msg = {
-    "type": "vehicle-flagrant",
-    "payload": {
-        "id_radar": id_radar,
-        "speed": speed,
-        "day": day,
-        "month": month,
-        "year": year,
-        "hour": hour,
-        "minute": minute,
-        "second": second,
-        "time-zone": time_zone,
-        "image": image
+
+def send_vehicle_flagrant_msg(dict_msg):
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(host=HOST))
+    main_channel = connection.channel()
+
+    main_channel.exchange_declare(exchange=EXCHANGE, exchange_type=EXCHANGE_TYPE)
+
+    uuid = _generate_id()
+    msg = {
+        "type": "vehicle-flagrant",
+        "id": uuid,
+        "time": dict_msg['time'],
+        "payload": {
+            "image1": dict_msg['image1'],
+            "image2": dict_msg['image2'],
+            "id_radar": dict_msg['id_radar'],
+            "infraction": dict_msg['infraction'],
+            "vehicle_speed": dict_msg['vehicle_speed'],
+            "considered_speed": dict_msg['considered_speed'],
+            "max_allowed_speed": dict_msg['max_allowed_speed'],
+            "penality": dict_msg['penality']
+        }
     }
-}
-main_channel.basic_publish(
-    exchange=EXCHANGE,
-    routing_key=ROUTING_KEY,
-    body=json.dumps(msg),
-    properties=pika.BasicProperties(content_type='application/json'))
-print('send message %s' % msg)
 
-connection.close()
+    main_channel.basic_publish(
+        exchange=EXCHANGE,
+        routing_key=ROUTING_KEY,
+        body=json.dumps(msg),
+        properties=pika.BasicProperties(content_type='application/json'))
+    print('send message %s' % msg)
+
+    connection.close()
