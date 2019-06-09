@@ -35,24 +35,12 @@ def search_plate(image_vehicle = None):
             "time": time
         }
 
-        response = requests.post(f'http://{ALPR_HOST}:{ALPR_PORT}/function/fn-alpr', json=dict_json)
+        response = requests.post(f'{ALPR_HOST}:{ALPR_PORT}/function/fn-alpr', json=dict_json)
 
         dict_response = response.json()
 
-        candidates_alpr = dict_response['response']['results'][0]['candidates']
-
-
-
         if dict_response['status_code'] == 200:
-            plate = None
-            best_confidence = -1
-
-            for candidate in candidates_alpr:
-                if candidate['matches_template'] == 1 and candidate['confidence'] > best_confidence:
-                    plate = candidate['plate']
-                    best_confidence = candidate['confidence']
-            
-            return plate
+            return dict_response
         else:
             return None
 
@@ -74,7 +62,7 @@ def get_vehicle_info(plate = None):
             "time": time
         }
 
-        response = requests.post(f'http://{SINESP_DOMAIN}/function/fn-sinesp', json=dict_json)
+        response = requests.post(f'{SINESP_DOMAIN}/function/fn-sinesp', json=dict_json)
 
         dict_response = response.json()
         if dict_response['status_code'] == 200:
