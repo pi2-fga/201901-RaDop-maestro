@@ -21,7 +21,7 @@ def _generate_id():
     return identifier
 
 
-def send_vehicle_flagrant_msg(dict_msg):
+def send_vehicle_flagrant(dict_msg=None):
     connection = pika.BlockingConnection(
         pika.ConnectionParameters(host=HOST))
     main_channel = connection.channel()
@@ -34,14 +34,13 @@ def send_vehicle_flagrant_msg(dict_msg):
         "id": uuid,
         "time": dict_msg['time'],
         "payload": {
+            "id_radar": dict_msg['id_radar'],
             "image1": dict_msg['image1'],
             "image2": dict_msg['image2'],
-            "id_radar": dict_msg['id_radar'],
             "infraction": dict_msg['infraction'],
             "vehicle_speed": dict_msg['vehicle_speed'],
             "considered_speed": dict_msg['considered_speed'],
-            "max_allowed_speed": dict_msg['max_allowed_speed'],
-            "penality": dict_msg['penality']
+            "max_allowed_speed": dict_msg['max_allowed_speed']
         }
     }
 

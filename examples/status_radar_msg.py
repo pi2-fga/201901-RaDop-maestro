@@ -4,6 +4,8 @@
 import json
 import pika
 import sys
+import uuid
+import datetime
 
 EXCHANGE = 'message'
 EXCHANGE_TYPE = 'topic'
@@ -11,33 +13,46 @@ QUEUE = 'maestro'
 ROUTING_KEY = 'message.maestro'
 HOST = 'localhost'
 
-print('pika version: %s' % pika.__version__)
-
 # test values: 2A 17 1 1 1 1
-carga, temp, status_rasp, status_camera, status_rf, status_server = sys.argv[1:7]
+# radar_id, status_radar, status_camera, status_rasp, status_uspr = sys.argv[1:6]
 
-connection = pika.BlockingConnection(
-    pika.ConnectionParameters(host=HOST))
-main_channel = connection.channel()
 
-main_channel.exchange_declare(exchange=EXCHANGE, exchange_type=EXCHANGE_TYPE)
+def _generate_id():
+    identifier = str(uuid.uuid4())
+    return identifier
 
-msg = {
-    "type": "status-radar",
-    "payload": {
-        "cargaBateria": carga,
-        "temperatura": temp,
-        "raspberry": status_rasp,
-        "camera": status_camera,
-        "rf": status_rf,
-        "servidor": status_server
+
+def _get_time():
+    time = datetime.datetime.utcnow()
+    time = str(time.isoformat('T') + 'Z')
+    return time
+
+
+def send_status_radar(dict_msg=None):
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(host=HOST))
+    main_channel = connection.channel()
+
+    main_channel.exchange_declare(exchange=EXCHANGE, exchange_type=EXCHANGE_TYPE)
+
+    msg = {
+        "id": _generate_id(),
+        "type": "status-radar",
+        "payload": {
+            "radar_id": dict_msg['radar_id'],
+            "radar": dict_msg['status_radar'],
+            "camera": dict_msg['status_camera'],
+            "rasp": dict_msg['status_rasp'],
+            "usrp": dict_msg['status_uspr'],
+            "time": _get_time()
+        },
+        "time": _get_time()
     }
-}
-main_channel.basic_publish(
-    exchange=EXCHANGE,
-    routing_key=ROUTING_KEY,
-    body=json.dumps(msg),
-    properties=pika.BasicProperties(content_type='application/json'))
-print('send message %s' % msg)
+    main_channel.basic_publish(
+        exchange=EXCHANGE,
+        routing_key=ROUTING_KEY,
+        body=json.dumps(msg),
+        properties=pika.BasicProperties(content_type='application/json'))
+    print('send message %s' % msg)
 
-connection.close()
+    connection.close()
