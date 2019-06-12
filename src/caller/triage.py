@@ -1,16 +1,20 @@
 import json
 import re
+import logging
 
-# take the json payload from the message body and transform in a dictionary
+LOG_FORMAT = ('%(levelname)s %(asctime)s - %(name)s %(funcName)s:\n%(message)s')
+logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+LOGGER = logging.getLogger(__name__)
+
+
 def transform_json_payload(message_body):
-    # json -> dictionary
     dict_payload = None
     try:
         dict_payload = json.loads(message_body)
-    except:
-        print('\t[*] Error in payload\'s decodification!')
-    
-    print(f'generated dictionary: {dict_payload}')
+    except Exception as err:
+        LOGGER.error(exc_info=True)
+
+    LOGGER.debug(f'generated dictionary: {dict_payload}')
     return dict_payload
 
 
@@ -26,9 +30,10 @@ def extract_plate(dict_json):
                 plate = candidate['plate']
                 best_confidence = candidate['confidence']
 
-        print(f'The best plate id is: {plate}')
+        LOGGER.debug(f'The best plate id is: {plate}')
         return plate
     else:
+        LOGGER.warning('No plate was extracted from the data informed!')
         return None
 
 
