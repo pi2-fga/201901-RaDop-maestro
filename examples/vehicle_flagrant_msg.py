@@ -13,10 +13,6 @@ ROUTING_KEY = 'message.maestro'
 HOST = 'localhost'
 
 
-# test values: 65 2019-04-27T10:14:35Z 1 80 77 60 true image1, image2
-# id_radar, time, infraction, vehicle_speed, considered_speed, max_allowed_speed, penality, image1, image2 = sys.argv[1:11]
-
-
 def _generate_id():
     identifier = str(uuid.uuid4())
     return identifier

@@ -13,9 +13,6 @@ QUEUE = 'maestro'
 ROUTING_KEY = 'message.maestro'
 HOST = 'localhost'
 
-# test values: 2A 17 1 1 1 1
-# radar_id, status_radar, status_camera, status_rasp, status_uspr = sys.argv[1:6]
-
 
 def _generate_id():
     identifier = str(uuid.uuid4())
