@@ -1,12 +1,13 @@
 FROM python:3-alpine
 
-RUN apk update && apk add py3-pip
-RUN pip install pika --upgrade
+WORKDIR /app
 
-WORKDIR /
-RUN mkdir orquestrator
+RUN apk update && apk add --no-cache py3-pip
+# RUN pip install pika --upgrade
 
-WORKDIR orquestrator
-COPY orquestrator/. .
+COPY requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-CMD python queue_worker.py
+COPY ./src/ /app/
+
+CMD python3 main.py

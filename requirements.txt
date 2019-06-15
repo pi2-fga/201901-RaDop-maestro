@@ -1,11 +1,16 @@
 # For Usage
 ###############################################################################
 pika==1.0.1 # https://pypi.org/project/pika/
-requests=2.22.0 # https://pypi.org/project/requests/
+websockets==7.0 # https://pypi.org/project/websockets/
+requests==2.22.0 # https://pypi.org/project/requests/
 
 # For Debugging
 ###############################################################################
 ipdb==0.11 # https://pypi.org/project/ipdb/
+
+# For Python 3.3 or lower (in python 3)
+###############################################################################
+asyncio==3.4.3 # https://pypi.org/project/asyncio/
 
 # For Tests
 ###############################################################################
