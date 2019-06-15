@@ -5,12 +5,16 @@ import functools
 import logging
 import time
 import pika
+import os
 
-# LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
-#               '-35s %(lineno) -5d: %(message)s')
-LOG_FORMAT = ('%(levelname)s %(asctime)s - %(name)s %(funcName)s:\n%(message)s')
+LOG_FORMAT = ('%(asctime)s %(levelname)10s - %(name)s %(funcName)s:\n%(message)s')
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 LOGGER = logging.getLogger(__name__)
+
+AMQP_USER = os.getenv('AMQP_USER', 'guest')
+AMQP_PASSWORD = os.getenv('AMQP_PASSWORD', 'guest')
+AMQP_HOST = os.getenv('AMQP_HOST', 'localhost')
+AMQP_PORT = os.getenv('AMQP_PORT', '5672')
 
 
 class Consumer(object):
@@ -437,8 +441,8 @@ class ReconnectingConsumer(object):
 
 
 def main(callback=None):
-    logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
-    amqp_url = 'amqp://guest:guest@localhost:5672/%2F'
+    # amqp_url = 'amqp://guest:guest@localhost:5672/%2F'
+    amqp_url = f'amqp://{AMQP_USER}:{AMQP_PASSWORD}@{AMQP_HOST}:{AMQP_PORT}'
     consumer = ReconnectingConsumer(amqp_url)
     consumer.run(callback)
 

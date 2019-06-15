@@ -4,6 +4,7 @@ import json
 import pika
 import sys
 import uuid
+import datetime
 
 EXCHANGE = 'message'
 EXCHANGE_TYPE = 'topic'
@@ -21,6 +22,12 @@ def _generate_id():
     return identifier
 
 
+def _get_time():
+    time = datetime.datetime.utcnow()
+    time = str(time.isoformat('T') + 'Z')
+    return time
+
+
 def send_vehicle_flagrant(dict_msg=None):
     connection = pika.BlockingConnection(
         pika.ConnectionParameters(host=HOST))
@@ -28,11 +35,10 @@ def send_vehicle_flagrant(dict_msg=None):
 
     main_channel.exchange_declare(exchange=EXCHANGE, exchange_type=EXCHANGE_TYPE)
 
-    uuid = _generate_id()
     msg = {
         "type": "vehicle-flagrant",
-        "id": uuid,
-        "time": dict_msg['time'],
+        "id": _generate_id(),
+        "time": _get_time(),
         "payload": {
             "id_radar": dict_msg['id_radar'],
             "image1": dict_msg['image1'],

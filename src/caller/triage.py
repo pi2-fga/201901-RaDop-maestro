@@ -2,9 +2,9 @@ import json
 import re
 import logging
 
-LOG_FORMAT = ('%(levelname)s %(asctime)s - %(name)s %(funcName)s:\n%(message)s')
-logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+LOG_FORMAT = ('%(asctime)s %(levelname)10s - %(name)s %(funcName)s:\n%(message)s')
 LOGGER = logging.getLogger(__name__)
+# LOGGER.setLevel(logging.INFO)
 
 
 def transform_json_payload(message_body):
