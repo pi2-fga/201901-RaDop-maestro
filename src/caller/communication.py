@@ -8,8 +8,7 @@ import websockets
 from websockets import ConnectionClosed
 import logging
 
-LOG_FORMAT = ('%(levelname)s %(asctime)s - %(name)s %(funcName)s:\n%(message)s')
-logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+LOG_FORMAT = ('%(asctime)s %(levelname)10s - %(name)s %(funcName)s:\n%(message)s')
 LOGGER = logging.getLogger(__name__)
 
 ALPR_KEY = os.getenv('ALPR_KEY', '')
@@ -68,6 +67,9 @@ async def _connect_rdm(database, table, payload):
 
 def _start_connection_rdm(database, table, payload):
     LOGGER.info(f'Starting the connection with RDM in table "{table}" from database "{database}"')
+    asyncio.set_event_loop(
+        asyncio.new_event_loop()
+    )
     try:
         loop = asyncio.get_event_loop()
         loop.run_until_complete(_connect_rdm(database, table, payload))
@@ -128,7 +130,7 @@ def get_vehicle_info(plate=None):
 
         response = requests.post(f'http://{SINESP_DOMAIN}/function/fn-sinesp',
                                  json=dict_json)
-
+        LOGGER.debug('Done the POST to SINESP')
         response_dict = response.json()
         if response_dict['status_code'] == 200:
             return response_dict['response']
@@ -154,7 +156,7 @@ def rdm_insert_infraction(infraction_data, vehicle_data):
     }
 
     _start_connection_rdm('RADAR', 'infraction', insert_data)
-    # rdm_insert_audit(insert_data)
+    rdm_insert_audit(insert_data)
 
 
 def rdm_insert_radar_status(radar_status_data):
@@ -167,7 +169,7 @@ def rdm_insert_radar_status(radar_status_data):
     }
 
     _start_connection_rdm('RADAR', 'status', insert_data)
-    # rdm_insert_audit(insert_data)
+    rdm_insert_audit(insert_data)
 
 
 def rdm_insert_audit(payload):
