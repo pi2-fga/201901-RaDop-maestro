@@ -31,6 +31,7 @@ def _get_time():
 
 
 async def _connect_rdm(database, table, payload):
+    response = None
     try:
         async with websockets.connect(
                 f'ws://{RDM_HOST}:{RDM_PORT}/insert') as websocket:
@@ -62,17 +63,20 @@ async def _connect_rdm(database, table, payload):
     except Exception as err:
         LOGGER.error(exc_info=True)
     else:
-        pass
+        return response
+        # pass
 
 
 def _start_connection_rdm(database, table, payload):
     LOGGER.info(f'Starting the connection with RDM in table "{table}" from database "{database}"')
+    response = None
+
     asyncio.set_event_loop(
         asyncio.new_event_loop()
     )
     try:
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(_connect_rdm(database, table, payload))
+        response = loop.run_until_complete(_connect_rdm(database, table, payload))
     except (asyncio.TimeoutError, ConnectionRefusedError) as err:
         LOGGER.error(exc_info=True)
     except ConnectionClosed as err:
@@ -81,8 +85,22 @@ def _start_connection_rdm(database, table, payload):
         LOGGER.error(exc_info=True)
     except Exception as err:
         LOGGER.error(exc_info=True)
+    else:
+        return response
     finally:
         asyncio.get_event_loop().stop()
+        return response
+
+
+def _rdm_insert_image_infraction(image):
+    LOGGER.info('Starting to insert the image from infraction in RDM')
+    response = None
+
+    image_data = { 'image': image }
+    response = _start_connection_rdm('IMAGES', 'infraction_images', image_data)
+    response = json.loads(response)
+
+    return response['response_message']['generated_keys'][0]
 
 
 def search_plate(image_vehicle=None):
@@ -145,11 +163,19 @@ def get_vehicle_info(plate=None):
 
 def rdm_insert_infraction(infraction_data, vehicle_data):
     LOGGER.info('Starting to insert data about the infraction and vehicle in RDM')
+
+    image_id1 = _rdm_insert_image_infraction(infraction_data['image1'])
+    image_id2 = _rdm_insert_image_infraction(infraction_data['image2'])
+
+    infraction = infraction_data
+    infraction['image1'] = image_id1
+    infraction['image2'] = image_id2
+
     insert_data = {
         'id': _generate_id(),
         'type': 'radar-infraction',
         'payload': {
-            'infraction-data': infraction_data,
+            'infraction-data': infraction,
             'vehicle-data': vehicle_data
         },
         'time': _get_time()
