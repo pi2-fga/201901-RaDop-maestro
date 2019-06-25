@@ -32,6 +32,14 @@ def _action_vehicle_flagrant(infraction_data):
     LOGGER.info('Saving data on RDM')
     communication.rdm_insert_infraction(infraction_data, vehicle_data)
 
+    notification_infraction_data = communication.notify_infraction(infraction_data, vehicle_data)
+    LOGGER.debug(f'result of notify_infraction: {notification_infraction_data}')
+    communication.rdm_insert_audit(notification_infraction_data)
+
+    notification_feasible_data = communication.notify_feasible(infraction_data)
+    LOGGER.debug(f'result of get_vehicle_info: {notification_feasible_data}')
+    communication.rdm_insert_audit(notification_feasible_data)
+
     LOGGER.info('Ending the actions for vehicle flagrant')
     pass
 

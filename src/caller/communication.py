@@ -12,12 +12,11 @@ LOG_FORMAT = ('%(asctime)s %(levelname)10s - %(name)s %(funcName)s:\n%(message)s
 LOGGER = logging.getLogger(__name__)
 
 ALPR_KEY = os.getenv('ALPR_KEY', '')
-ALPR_HOST = os.getenv('ALPR_HOST', 'localhost')
-ALPR_PORT = os.getenv('ALPR_PORT', 8080)
+FN_HOST = os.getenv('FN_HOST', 'localhost')
+FN_PORT = os.getenv('FN_PORT', 8080)
 SINESP_DOMAIN = os.getenv('SINESP_DOMAIN', '')
 RDM_HOST = os.getenv('RDM_HOST', 'localhost')
 RDM_PORT = os.getenv('RDM_PORT', 8765)
-
 
 def _generate_id():
     identifier = str(uuid.uuid4())
@@ -28,6 +27,14 @@ def _get_time():
     time = datetime.datetime.utcnow()
     time = str(time.isoformat('T') + 'Z')
     return time
+
+
+def _remove_infraction_images(infraction_data):
+    new_infraction_data = infraction_data
+    new_infraction_data.pop('image1', None)
+    new_infraction_data.pop('image2', None)
+
+    return new_infraction_data
 
 
 async def _connect_rdm(database, table, payload):
@@ -116,7 +123,7 @@ def search_plate(image_vehicle=None):
             'time': _get_time()
         }
 
-        response = requests.post(f'http://{ALPR_HOST}:{ALPR_PORT}/function/fn-alpr',
+        response = requests.post(f'http://{FN_HOST}:{FN_PORT}/function/fn-alpr',
                                  json=dict_json)
 
         response_dict = response.json()
@@ -158,6 +165,53 @@ def get_vehicle_info(plate=None):
 
     else:
         LOGGER.error('No plate was sent!')
+        return None
+
+
+def notify_infraction(infraction_data, vehicle_data):
+    LOGGER.info('Starting the notification of the infraction')
+    new_infraction_data = _remove_infraction_images(infraction_data)
+    new_infraction_data.pop('date', None)
+
+    dict_json = {
+        'id': _generate_id(),
+        'type': 'notify-infraction-call',
+        'payload': {
+            'infraction-data': new_infraction_data,
+            'vehicle-data': vehicle_data
+        },
+        'time': _get_time()
+    }
+
+    response = requests.post(f'http://{FN_HOST}:{FN_PORT}/function/fn-notify-infraction',
+                                json=dict_json)
+
+    if response.status_code == 200:
+            return dict_json
+    else:
+        LOGGER.warning(f"The request wasn\'t sucessfull. Received status code {response.status_code}")
+        return None
+
+
+def notify_feasible(infraction_data):
+    LOGGER.info('Starting the notification of the feasible')
+    new_infraction_data = _remove_infraction_images(infraction_data)
+    new_infraction_data.pop('infraction', None)
+
+    dict_json = {
+        'id': _generate_id(),
+        'type': 'notify-feasible-call',
+        'payload': new_infraction_data,
+        'time': _get_time()
+    }
+
+    response = requests.post(f'http://{FN_HOST}:{FN_PORT}/function/fn-notify-feasible',
+                                json=dict_json)
+
+    if response.status_code == 200:
+            return dict_json
+    else:
+        LOGGER.warning(f"The request wasn\'t sucessfull. Received status code {response.status_code}")
         return None
 
 
