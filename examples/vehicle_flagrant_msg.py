@@ -42,7 +42,8 @@ def send_vehicle_flagrant(dict_msg=None):
             "infraction": dict_msg['infraction'],
             "vehicle_speed": dict_msg['vehicle_speed'],
             "considered_speed": dict_msg['considered_speed'],
-            "max_allowed_speed": dict_msg['max_allowed_speed']
+            "max_allowed_speed": dict_msg['max_allowed_speed'],
+            "date": _get_time()
         }
     }
 
