@@ -40,8 +40,7 @@ def send_status_radar(dict_msg=None):
             "radar": dict_msg['status_radar'],
             "camera": dict_msg['status_camera'],
             "rasp": dict_msg['status_rasp'],
-            "usrp": dict_msg['status_uspr'],
-            "time": _get_time()
+            "usrp": dict_msg['status_uspr']
         },
         "time": _get_time()
     }
