@@ -171,7 +171,6 @@ def get_vehicle_info(plate=None):
 def notify_infraction(infraction_data, vehicle_data):
     LOGGER.info('Starting the notification of the infraction')
     new_infraction_data = _remove_infraction_images(infraction_data)
-    new_infraction_data.pop('date', None)
 
     dict_json = {
         'id': _generate_id(),
@@ -196,7 +195,6 @@ def notify_infraction(infraction_data, vehicle_data):
 def notify_feasible(infraction_data):
     LOGGER.info('Starting the notification of the feasible')
     new_infraction_data = _remove_infraction_images(infraction_data)
-    new_infraction_data.pop('infraction', None)
 
     dict_json = {
         'id': _generate_id(),
