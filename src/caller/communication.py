@@ -14,7 +14,8 @@ LOGGER = logging.getLogger(__name__)
 ALPR_KEY = os.getenv('ALPR_KEY', '')
 FN_HOST = os.getenv('FN_HOST', 'localhost')
 FN_PORT = os.getenv('FN_PORT', 8080)
-SINESP_DOMAIN = os.getenv('SINESP_DOMAIN', '')
+SINESP_HOST = os.getenv('SINESP_HOST', 'localhost')
+SINESP_PORT = os.getenv('SINESP_PORT', 3000)
 RDM_HOST = os.getenv('RDM_HOST', 'localhost')
 RDM_PORT = os.getenv('RDM_PORT', 8765)
 
@@ -142,25 +143,14 @@ def search_plate(image_vehicle=None):
 def get_vehicle_info(plate=None):
     LOGGER.info('Starting the search for infos about the vehicle')
     if plate:
-        uuid = _generate_id()
-        time = _get_time()
-        dict_json = {
-            'id': uuid,
-            'type': 'sinesp-call',
-            'payload': {
-                'plate': plate
-            },
-            'time': time
-        }
-
-        response = requests.post(f'http://{SINESP_DOMAIN}/function/fn-sinesp',
-                                 json=dict_json)
+        requests.get(f'http://{SINESP_HOST}:{SINESP_PORT}/sinesp/token/new')
+        response = requests.get(f'http://{SINESP_HOST}:{SINESP_PORT}/sinesp/placa/{plate}')
         LOGGER.debug('Done the POST to SINESP')
-        response_dict = response.json()
-        if response_dict['status_code'] == 200:
-            return response_dict['response']
+
+        if response.status_code == 200:
+            return response.json()
         else:
-            LOGGER.warning(f"The request wasn\'t sucessfull. Received status code {response_dict['status_code']}")
+            LOGGER.warning(f"The request wasn\'t sucessfull. Received status code {response.status_code}")
             return None
 
     else:
