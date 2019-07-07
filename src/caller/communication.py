@@ -14,8 +14,13 @@ LOGGER = logging.getLogger(__name__)
 ALPR_KEY = os.getenv('ALPR_KEY', '')
 FN_HOST = os.getenv('FN_HOST', 'localhost')
 FN_PORT = os.getenv('FN_PORT', 8080)
+<<<<<<< HEAD
 SINESP_HOST = os.getenv('SINESP_HOST', 'localhost')
 SINESP_PORT = os.getenv('SINESP_PORT', 3000)
+=======
+API_PORT = os.getenv('API_PORT', 3333)
+SINESP_DOMAIN = os.getenv('SINESP_DOMAIN', '')
+>>>>>>> 069590fb31a9e9e2cf990b3a841d5cc55bd9b113
 RDM_HOST = os.getenv('RDM_HOST', 'localhost')
 RDM_PORT = os.getenv('RDM_PORT', 8765)
 
@@ -229,15 +234,26 @@ def rdm_insert_infraction(infraction_data, vehicle_data):
 
 def rdm_insert_radar_status(radar_status_data):
     LOGGER.info('Starting to insert data about the radar\'s status in RDM')
+    time = _get_time()
     insert_data = {
         'id': _generate_id(),
         'type': 'radar-app-data',
         'payload': radar_status_data,
-        'time': _get_time()
+        'time': time
     }
 
+    api_data = radar_status_data
+    api_data['date'] = time.rsplit('T')[0].replace('-', '/')
+    api_data['time'] = time.rsplit('T')[1].rsplit('.')[0][:-3]
+    LOGGER.debug('Sending data to API')
+    requests.post(f'http://{FN_HOST}:{API_PORT}/radar/statuses/',
+                                json=api_data)
+
+    LOGGER.debug('Sending data to RDM')
     _start_connection_rdm('RADAR', 'status', insert_data)
+
     rdm_insert_audit(insert_data)
+    rdm_insert_audit(api_data)
 
 
 def rdm_insert_audit(payload):
