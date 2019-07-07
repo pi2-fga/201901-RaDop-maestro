@@ -14,13 +14,8 @@ LOGGER = logging.getLogger(__name__)
 ALPR_KEY = os.getenv('ALPR_KEY', '')
 FN_HOST = os.getenv('FN_HOST', 'localhost')
 FN_PORT = os.getenv('FN_PORT', 8080)
-<<<<<<< HEAD
 SINESP_HOST = os.getenv('SINESP_HOST', 'localhost')
 SINESP_PORT = os.getenv('SINESP_PORT', 3000)
-=======
-API_PORT = os.getenv('API_PORT', 3333)
-SINESP_DOMAIN = os.getenv('SINESP_DOMAIN', '')
->>>>>>> 069590fb31a9e9e2cf990b3a841d5cc55bd9b113
 RDM_HOST = os.getenv('RDM_HOST', 'localhost')
 RDM_PORT = os.getenv('RDM_PORT', 8765)
 
