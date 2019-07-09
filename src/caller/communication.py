@@ -16,7 +16,6 @@ FN_HOST = os.getenv('FN_HOST', 'localhost')
 FN_PORT = os.getenv('FN_PORT', 8080)
 API_PORT = os.getenv('API_PORT', 3333)
 SINESP_HOST = os.getenv('SINESP_HOST', 'localhost')
-SINESP_PORT = os.getenv('SINESP_PORT', 3000)
 RDM_HOST = os.getenv('RDM_HOST', 'localhost')
 RDM_PORT = os.getenv('RDM_PORT', 8765)
 
@@ -29,14 +28,6 @@ def _get_time():
     time = datetime.datetime.utcnow()
     time = str(time.isoformat('T') + 'Z')
     return time
-
-
-def _remove_infraction_images(infraction_data):
-    new_infraction_data = infraction_data
-    new_infraction_data.pop('image1', None)
-    new_infraction_data.pop('image2', None)
-
-    return new_infraction_data
 
 
 async def _connect_rdm(database, table, payload):
@@ -144,8 +135,8 @@ def search_plate(image_vehicle=None):
 def get_vehicle_info(plate=None):
     LOGGER.info('Starting the search for infos about the vehicle')
     if plate:
-        requests.get(f'http://{SINESP_HOST}:{SINESP_PORT}/sinesp/token/new')
-        response = requests.get(f'http://{SINESP_HOST}:{SINESP_PORT}/sinesp/placa/{plate}')
+        requests.get(f'{SINESP_HOST}/sinesp/token/new')
+        response = requests.get(f'{SINESP_HOST}/sinesp/placa/{plate}')
         LOGGER.debug('Done the POST to SINESP')
 
         if response.status_code == 200:
@@ -161,15 +152,36 @@ def get_vehicle_info(plate=None):
 
 def notify_infraction(infraction_data, vehicle_data, infraction_id):
     LOGGER.info('Starting the notification of the infraction')
-    new_infraction_data = _remove_infraction_images(infraction_data)
 
     dict_json = {
         'id': _generate_id(),
         'type': 'notify-infraction-call',
-        'infraction_id': infraction_id,
         'payload': {
-            'infraction-data': new_infraction_data,
-            'vehicle-data': vehicle_data
+            'infraction_id': infraction_id,
+            'infraction_data': {
+                'infraction_id': infraction_id,
+                'id_radar': infraction_data['id_radar'],
+                'infraction': infraction_data['infraction'],
+                'vehicle_speed': infraction_data['vehicle_speed'],
+                'considered_speed': infraction_data['considered_speed'],
+                'max_allowed_speed': infraction_data['max_allowed_speed']
+            },
+            'vehicle_data': {
+                'brand': vehicle_data['modelo'],
+                'chassis': vehicle_data['chassi'],
+                'city': vehicle_data['municipio'],
+                'color': vehicle_data['cor'],
+                'date': vehicle_data['data'],
+                'model': vehicle_data['modelo'],
+                'model_year': vehicle_data['anoModelo'],
+                'plate': vehicle_data['placa'],
+                'return_code': vehicle_data['codigoRetorno'],
+                'return_message': vehicle_data['mensagemRetorno'],
+                'state': vehicle_data['uf'],
+                'status_code': vehicle_data['codigoSituacao'],
+                'status_message': vehicle_data['situacao'],
+                'year': vehicle_data['ano']
+            }
         },
         'time': _get_time()
     }
@@ -186,17 +198,16 @@ def notify_infraction(infraction_data, vehicle_data, infraction_id):
 
 def notify_feasible(infraction_data, infraction_id):
     LOGGER.info('Starting the notification of the feasible')
-    new_infraction_data = _remove_infraction_images(infraction_data)
 
     dict_json = {
         'id': _generate_id(),
         'type': 'notify-feasible-call',
         'payload': {
             'infraction_id': infraction_id,
-            'infraction': new_infraction_data['infraction'],
-            'vehicle_speed': new_infraction_data['vehicle_speed'],
-            'considered_speed': new_infraction_data['considered_speed'],
-            'max_allowed_speed': new_infraction_data['max_allowed_speed']
+            'infraction': infraction_data['infraction'],
+            'vehicle_speed': infraction_data['vehicle_speed'],
+            'considered_speed': infraction_data['considered_speed'],
+            'max_allowed_speed': infraction_data['max_allowed_speed']
         },
         'time': _get_time()
     }
@@ -224,8 +235,8 @@ def rdm_insert_infraction(infraction_data, vehicle_data):
         'id': infraction_id,
         'type': 'radar-infraction',
         'payload': {
-            'infraction-data': infraction,
-            'vehicle-data': vehicle_data
+            'infraction_data': infraction,
+            'vehicle_data': vehicle_data
         },
         'time': _get_time()
     }
