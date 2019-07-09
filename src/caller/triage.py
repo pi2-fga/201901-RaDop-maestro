@@ -14,7 +14,7 @@ def transform_json_payload(message_body):
     except Exception as err:
         LOGGER.error(exc_info=True)
 
-    LOGGER.debug(f'generated dictionary: {dict_payload}')
+    # LOGGER.debug(f'generated dictionary: {dict_payload}')
     return dict_payload
 
 

@@ -318,8 +318,10 @@ class Consumer(object):
         :param bytes body: The message body
 
         """
-        LOGGER.info('Received message # %s from %s: %s',
-                    basic_deliver.delivery_tag, properties.app_id, body)
+        # LOGGER.info('Received message # %s from %s: %s',
+        #             basic_deliver.delivery_tag, properties.app_id, body)
+        LOGGER.info('Received message # %s from %s',
+                     basic_deliver.delivery_tag, properties.app_id)
 
         if(self._callback_fn):
             self._callback_fn(body)
