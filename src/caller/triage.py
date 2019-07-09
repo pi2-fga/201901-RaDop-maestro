@@ -20,7 +20,7 @@ def transform_json_payload(message_body):
 
 # extract the best candidate to a vehicle's plate
 def extract_plate(dict_json):
-    if dict_json:
+    if dict_json and len(dict_json['response']['results']) > 0:
         candidates_alpr = dict_json['response']['results'][0]['candidates']
         plate = None
         best_confidence = -1

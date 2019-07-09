@@ -22,25 +22,28 @@ def _action_vehicle_flagrant(infraction_data):
     communication.rdm_insert_audit(dict_plates_identification)
 
     plate = triage.extract_plate(dict_plates_identification)
-    LOGGER.debug(f'result of extract_plate: {plate}')
-    communication.rdm_insert_audit('{plate: {%s}}' % plate)
+    if plate:
+        LOGGER.debug(f'result of extract_plate: {plate}')
+        communication.rdm_insert_audit('{plate: {%s}}' % plate)
 
-    vehicle_data = communication.get_vehicle_info(plate)
-    LOGGER.debug(f'result of get_vehicle_info: {vehicle_data}')
-    communication.rdm_insert_audit(vehicle_data)
+        vehicle_data = communication.get_vehicle_info(plate)
+        LOGGER.debug(f'result of get_vehicle_info: {vehicle_data}')
+        communication.rdm_insert_audit(vehicle_data)
 
-    LOGGER.info('Saving data on RDM')
-    infraction_id = communication.rdm_insert_infraction(infraction_data, vehicle_data)
+        LOGGER.info('Saving data on RDM')
+        infraction_id = communication.rdm_insert_infraction(infraction_data, vehicle_data)
 
-    notification_infraction_data = communication.notify_infraction(infraction_data, vehicle_data, infraction_id)
-    LOGGER.debug(f'result of notify_infraction: {notification_infraction_data}')
-    communication.rdm_insert_audit(notification_infraction_data)
+        notification_infraction_data = communication.notify_infraction(infraction_data, vehicle_data, infraction_id)
+        LOGGER.debug(f'result of notify_infraction: {notification_infraction_data}')
+        communication.rdm_insert_audit(notification_infraction_data)
 
-    notification_feasible_data = communication.notify_feasible(infraction_data, infraction_id)
-    LOGGER.debug(f'result of get_vehicle_info: {notification_feasible_data}')
-    communication.rdm_insert_audit(notification_feasible_data)
+        notification_feasible_data = communication.notify_feasible(infraction_data, infraction_id)
+        LOGGER.debug(f'result of get_vehicle_info: {notification_feasible_data}')
+        communication.rdm_insert_audit(notification_feasible_data)
 
-    LOGGER.info('Ending the actions for vehicle flagrant')
+        LOGGER.info('Ending the actions for vehicle flagrant')
+    else:
+        LOGGER.warning('No plate found! Stopping the task.')
     pass
 
 
