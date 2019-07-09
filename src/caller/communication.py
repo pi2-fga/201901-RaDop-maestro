@@ -14,6 +14,7 @@ LOGGER = logging.getLogger(__name__)
 ALPR_KEY = os.getenv('ALPR_KEY', '')
 FN_HOST = os.getenv('FN_HOST', 'localhost')
 FN_PORT = os.getenv('FN_PORT', 8080)
+API_PORT = os.getenv('API_PORT', 3333)
 SINESP_HOST = os.getenv('SINESP_HOST', 'localhost')
 SINESP_PORT = os.getenv('SINESP_PORT', 3000)
 RDM_HOST = os.getenv('RDM_HOST', 'localhost')
@@ -129,10 +130,10 @@ def search_plate(image_vehicle=None):
 
         response_dict = response.json()
 
-        if response_dict['status_code'] == 200:
-            return response_dict
+        if response.status_code == 200:
+            return response.json()
         else:
-            LOGGER.warning(f"The request wasn\'t sucessfull. Received status code {response_dict['status_code']}")
+            LOGGER.warning(f"The request wasn\'t sucessfull. Received status code {response.status_code}")
             return None
 
     else:
@@ -158,13 +159,14 @@ def get_vehicle_info(plate=None):
         return None
 
 
-def notify_infraction(infraction_data, vehicle_data):
+def notify_infraction(infraction_data, vehicle_data, infraction_id):
     LOGGER.info('Starting the notification of the infraction')
     new_infraction_data = _remove_infraction_images(infraction_data)
 
     dict_json = {
         'id': _generate_id(),
         'type': 'notify-infraction-call',
+        'infraction_id': infraction_id,
         'payload': {
             'infraction-data': new_infraction_data,
             'vehicle-data': vehicle_data
@@ -182,14 +184,20 @@ def notify_infraction(infraction_data, vehicle_data):
         return None
 
 
-def notify_feasible(infraction_data):
+def notify_feasible(infraction_data, infraction_id):
     LOGGER.info('Starting the notification of the feasible')
     new_infraction_data = _remove_infraction_images(infraction_data)
 
     dict_json = {
         'id': _generate_id(),
         'type': 'notify-feasible-call',
-        'payload': new_infraction_data,
+        'payload': {
+            'infraction_id': infraction_id,
+            'infraction': new_infraction_data['infraction'],
+            'vehicle_speed': new_infraction_data['vehicle_speed'],
+            'considered_speed': new_infraction_data['considered_speed'],
+            'max_allowed_speed': new_infraction_data['max_allowed_speed']
+        },
         'time': _get_time()
     }
 
@@ -205,16 +213,15 @@ def notify_feasible(infraction_data):
 
 def rdm_insert_infraction(infraction_data, vehicle_data):
     LOGGER.info('Starting to insert data about the infraction and vehicle in RDM')
-
     image_id1 = _rdm_insert_image_infraction(infraction_data['image1'])
     image_id2 = _rdm_insert_image_infraction(infraction_data['image2'])
-
     infraction = infraction_data
-    infraction['image1'] = image_id1
-    infraction['image2'] = image_id2
+    infraction['image1'] = 'image_id1'
+    infraction['image2'] = 'image_id2'
+    infraction_id = _generate_id()
 
     insert_data = {
-        'id': _generate_id(),
+        'id': infraction_id,
         'type': 'radar-infraction',
         'payload': {
             'infraction-data': infraction,
@@ -225,6 +232,8 @@ def rdm_insert_infraction(infraction_data, vehicle_data):
 
     _start_connection_rdm('RADAR', 'infraction', insert_data)
     rdm_insert_audit(insert_data)
+
+    return infraction_id
 
 
 def rdm_insert_radar_status(radar_status_data):

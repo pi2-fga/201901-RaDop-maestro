@@ -23,20 +23,20 @@ def _action_vehicle_flagrant(infraction_data):
 
     plate = triage.extract_plate(dict_plates_identification)
     LOGGER.debug(f'result of extract_plate: {plate}')
-    communication.rdm_insert_audit(plate)
+    communication.rdm_insert_audit('{plate: {%s}}' % plate)
 
     vehicle_data = communication.get_vehicle_info(plate)
     LOGGER.debug(f'result of get_vehicle_info: {vehicle_data}')
     communication.rdm_insert_audit(vehicle_data)
 
     LOGGER.info('Saving data on RDM')
-    communication.rdm_insert_infraction(infraction_data, vehicle_data)
+    infraction_id = communication.rdm_insert_infraction(infraction_data, vehicle_data)
 
-    notification_infraction_data = communication.notify_infraction(infraction_data, vehicle_data)
+    notification_infraction_data = communication.notify_infraction(infraction_data, vehicle_data, infraction_id)
     LOGGER.debug(f'result of notify_infraction: {notification_infraction_data}')
     communication.rdm_insert_audit(notification_infraction_data)
 
-    notification_feasible_data = communication.notify_feasible(infraction_data)
+    notification_feasible_data = communication.notify_feasible(infraction_data, infraction_id)
     LOGGER.debug(f'result of get_vehicle_info: {notification_feasible_data}')
     communication.rdm_insert_audit(notification_feasible_data)
 
